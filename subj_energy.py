@@ -20,8 +20,8 @@ BASEDIR = '/Users/alecsmac/coding/coco/drug_comparison'
 FOLDER = 'subj_energy'
 
 # Set variables for energy calculations
-C = 0
-T = 0.001
+C = 1
+T = 1
 
 # Load Data
 LSD_DATA = scipy.io.loadmat(os.path.join(
@@ -36,22 +36,37 @@ YEO_FILE.close()
 NETWORKS = ['VIS', 'SOM', 'DAT', 'VAT', 'LIM', 'FPN', 'DMN', 'SUB']
 
 # Extract relevant variables
-SC = SCHAEFER['connectivity']
+SC = SCHAEFER['vol_normalized_sc']
 NPARC = int(SC.shape[0])
 
+
+def convert_to_one_array(array_of_arrays):
+    return np.stack([np.stack(array_of_arrays[i], axis=0)
+                     for i in range(array_of_arrays.shape[0])], axis=0)
+
+
+def get_ts_diff(ts, ts_gsr):
+    ts_diff = ts_gsr.copy()
+    for i1 in range(ts.shape[0]):
+        for i2 in range(ts.shape[1]):
+            for i3 in range(ts.shape[2]):
+                ts_mean = np.mean(ts[i1, i2, i3])
+                ts_diff[i1, i2, i3] = ts_diff[i1, i2, i3]/ts_mean
+    return ts_diff
+
+
 # LSD Data
-LSD_TS = LSD_DATA['ts']
-LSD_TS_GSR = LSD_DATA['ts_gsr']
-LSD_TS_DIFF = LSD_TS_GSR/LSD_TS
-LSD_NSCANS = int(LSD_TS[0, 0].shape[1])
+LSD_TS = convert_to_one_array(LSD_DATA['ts'])
+LSD_TS_GSR = convert_to_one_array(LSD_DATA['ts_gsr'])
+LSD_TS_DIFF = get_ts_diff(LSD_TS, LSD_TS_GSR)
+LSD_NSCANS = int(LSD_TS.shape[3])
 LSD_NSUBJS = int(LSD_TS.shape[0])
 LSD_NTRIALS = int(LSD_TS.shape[1])
-
 # NO Data
-NO_TS = NO_DATA['ts']
-NO_TS_GSR = NO_DATA['ts_gsr']
-NO_TS_DIFF = NO_TS_GSR/NO_TS
-NO_NSCANS = int(NO_TS[0, 0].shape[1])
+NO_TS = convert_to_one_array(NO_DATA['ts'])
+NO_TS_GSR = convert_to_one_array(NO_DATA['ts_gsr'])
+NO_TS_DIFF = get_ts_diff(NO_TS, NO_TS_GSR)
+NO_NSCANS = int(NO_TS.shape[3])
 NO_NSUBJS = int(NO_TS.shape[0])
 NO_NTRIALS = int(NO_TS.shape[1])
 
@@ -61,8 +76,8 @@ ANORM = matrix_normalization(SC, c=C, system='continuous')
 
 def save_energies(ts, nscans, nsubjs, ntrials, saveprefix):
     B = np.eye(NPARC)
-    nodal_energy = np.full(ts.shape + (NPARC, nscans-1), np.nan)
-    total_energy = np.full(ts.shape + (nscans-1,), np.nan)
+    nodal_energy = np.full(ts.shape[:3] + (nscans-1,), np.nan)
+    total_energy = np.full(ts.shape[:2] + (nscans-1,), np.nan)
     ts_vec = np.arange(0, nscans)
     xi_index = ts_vec[:-1]
     xf_index = ts_vec[1:]
@@ -99,6 +114,15 @@ LSD_DIFF_NODAL_ENERGY = np.load(os.path.join(BASEDIR, 'results', FOLDER, 'lsd_di
                                              '_nodal_energy.npy'))
 LSD_DIFF_TOTAL_ENERGY = np.load(os.path.join(BASEDIR, 'results', FOLDER, 'lsd_diff' +
                                              '_total_energy.npy'))
+# Get desired LSD result averages
+LSD_TREATMENT_TOTAL_AVERAGE = np.mean(
+    [LSD_DIFF_TOTAL_ENERGY[:, 0], LSD_DIFF_TOTAL_ENERGY[:, 1]], axis=0)
+LSD_SOBER_TOTAL_AVERAGE = np.mean(
+    [LSD_DIFF_TOTAL_ENERGY[:, 2], LSD_DIFF_TOTAL_ENERGY[:, 3]], axis=0)
+LSD_TREATMENT_NODAL_AVERAGE = np.mean(
+    [LSD_DIFF_NODAL_ENERGY[:, 0], LSD_DIFF_NODAL_ENERGY[:, 1]], axis=0)
+LSD_SOBER_NODAL_AVERAGE = np.mean(
+    [LSD_DIFF_NODAL_ENERGY[:, 2], LSD_DIFF_NODAL_ENERGY[:, 3]], axis=0)
 
 # Load NO results from save_energies
 NO_NODAL_ENERGY = np.load(os.path.join(BASEDIR, 'results', FOLDER, 'no' +
@@ -144,16 +168,12 @@ def regional_ttest(data_before, data_after, saveprefix):
 
 
 # Compute and Save LSD Regional TTest
-# LSD_TREATMENT_NODAL_AVERAGE = np.mean(
-#     [LSD_DIFF_NODAL_ENERGY[:, 0], LSD_DIFF_NODAL_ENERGY[:, 1]], axis=0)
-# LSD_SOBER_NODAL_AVERAGE = np.mean(
-#     [LSD_DIFF_NODAL_ENERGY[:, 2], LSD_DIFF_NODAL_ENERGY[:, 3]], axis=0)
-# regional_ttest(LSD_TREATMENT_NODAL_AVERAGE,
-#                LSD_SOBER_NODAL_AVERAGE, 'LSD_diff')
+regional_ttest(LSD_TREATMENT_NODAL_AVERAGE,
+               LSD_SOBER_NODAL_AVERAGE, 'LSD_diff')
 
-# # Compute and Save NO Regional TTest
-# regional_ttest(NO_DIFF_NODAL_ENERGY[:, 0, :],
-#                NO_DIFF_NODAL_ENERGY[:, 1, :], 'NO_diff')
+# Compute and Save NO Regional TTest
+regional_ttest(NO_DIFF_NODAL_ENERGY[:, 0, :],
+               NO_DIFF_NODAL_ENERGY[:, 1, :], 'NO_diff')
 
 # Load Regional TTest Results
 LSD_DIFF_REGIONAL_T = np.load(os.path.join(
@@ -168,7 +188,7 @@ NO_DIFF_REGIONAL_PAVG = np.load(os.path.join(
 # Visualize Regional TTest Results
 
 
-def regional_plot(regional_t, drug, save=True):
+def regional_plot(regional_t, title, savename, subtitle='', save=True):
     range = [np.min(regional_t), np.max(regional_t)]
     tot_range = abs(range[1] - range[0])
     zero_distance = abs(range[0])
@@ -182,13 +202,58 @@ def regional_plot(regional_t, drug, save=True):
     ax.yaxis.set_ticklabels([])
     ax.xaxis.set_ticks([])
     ax.xaxis.set_ticklabels([])
-    plt.title(
-        f"Δ Energy = During Treatment - Before Treatment", size=9)
-    plt.suptitle(f"T-Stat for Control Energy of {drug} Condition")
+    # plt.title(
+    #     subtitle, size=9)
+    plt.suptitle(title)
     if save:
-        plt.savefig(os.path.join(BASEDIR, 'visuals', FOLDER, drug))
+        plt.savefig(os.path.join(BASEDIR, 'visuals', FOLDER, savename))
     plt.show()
 
 
-# regional_plot(LSD_DIFF_REGIONAL_T, 'LSD')
-# regional_plot(NO_DIFF_REGIONAL_T, 'NO')
+# Uncomment to visualize regional t test results
+regional_plot(LSD_DIFF_REGIONAL_T, "T-Stat for Control Energy of LSD Condition", 'regional_tstat_LSD',
+              "Δ Energy = During Treatment - Before Treatment")
+regional_plot(NO_DIFF_REGIONAL_T, "T-Stat for Control Energy of NO Condition", 'regional_tstat_NO'
+              "Δ Energy = During Treatment - Before Treatment")
+
+# Global Delta Energy Unpaired t test
+
+
+def delta_energy_NO():
+    mean_across_transitions = np.mean(NO_DIFF_TOTAL_ENERGY, axis=2)
+    return mean_across_transitions[:, 1] - mean_across_transitions[:, 0]
+
+
+def delta_energy_LSD():
+    return np.mean(LSD_TREATMENT_TOTAL_AVERAGE, axis=1) - np.mean(LSD_SOBER_TOTAL_AVERAGE, axis=1)
+
+
+DELTA_ENERGY_NO = delta_energy_NO()
+DELTA_ENERGY_LSD = delta_energy_LSD()
+
+
+DELTA_ENERGY_T, DELTA_ENERGY_PAVG = ttest_ind(DELTA_ENERGY_LSD,
+                                              DELTA_ENERGY_NO, equal_var=False)
+
+
+# Regional Delta Energys Unpaired ttest
+
+
+def regional_delta_energy_NO():
+    mean_across_transitions = np.mean(NO_DIFF_NODAL_ENERGY, axis=3)
+    return mean_across_transitions[:, 1, :] - mean_across_transitions[:, 0, :]
+
+
+def regional_delta_energy_LSD():
+    return np.mean(LSD_TREATMENT_NODAL_AVERAGE, axis=2) - np.mean(LSD_SOBER_NODAL_AVERAGE, axis=2)
+
+
+REGIONAL_DELTA_ENERGY_NO = regional_delta_energy_NO()
+REGIONAL_DELTA_ENERGY_LSD = regional_delta_energy_LSD()
+
+REGIONAL_DELTA_ENERGY_T, REGIONAL_DELTA_ENERGY_PAVG = ttest_ind(REGIONAL_DELTA_ENERGY_LSD,
+                                                                REGIONAL_DELTA_ENERGY_NO, equal_var=False)
+
+
+regional_plot(REGIONAL_DELTA_ENERGY_T,
+              'Unpaired T-Test for Δ Control Energy of LSD Vs. NO Conditions', 'delta_control_energy_tstat')
