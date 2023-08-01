@@ -100,10 +100,10 @@ def save_energies(ts, nscans, nsubjs, ntrials, saveprefix):
 
 # Calculate and save control energies
 
-save_energies(LSD_TS, LSD_NSCANS, LSD_NSUBJS, LSD_NTRIALS, 'lsd')
-save_energies(NO_TS, NO_NSCANS, NO_NSUBJS, NO_NTRIALS, 'no')
-save_energies(LSD_TS_DIFF, LSD_NSCANS, LSD_NSUBJS, LSD_NTRIALS, 'lsd_diff')
-save_energies(NO_TS_DIFF, NO_NSCANS, NO_NSUBJS, NO_NTRIALS, 'no_diff')
+# save_energies(LSD_TS, LSD_NSCANS, LSD_NSUBJS, LSD_NTRIALS, 'lsd')
+# save_energies(NO_TS, NO_NSCANS, NO_NSUBJS, NO_NTRIALS, 'no')
+# save_energies(LSD_TS_DIFF, LSD_NSCANS, LSD_NSUBJS, LSD_NTRIALS, 'lsd_diff')
+# save_energies(NO_TS_DIFF, NO_NSCANS, NO_NSUBJS, NO_NTRIALS, 'no_diff')
 
 # Load LSD results from save_energies
 LSD_NODAL_ENERGY = np.load(os.path.join(BASEDIR, 'results', FOLDER, 'lsd' +
