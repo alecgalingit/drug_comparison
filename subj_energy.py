@@ -202,11 +202,13 @@ def regional_plot(regional_t, title, savename, subtitle='', save=True):
     ax.yaxis.set_ticklabels([])
     ax.xaxis.set_ticks([])
     ax.xaxis.set_ticklabels([])
+    fig.text(0.73, 0.5, 'T-Statistic')
     # plt.title(
     #     subtitle, size=9)
     plt.suptitle(title)
     if save:
-        plt.savefig(os.path.join(BASEDIR, 'visuals', FOLDER, savename))
+        plt.savefig(os.path.join(BASEDIR, 'visuals',
+                    FOLDER, savename), dpi=300)
     plt.show()
 
 
@@ -277,4 +279,4 @@ REGIONAL_DELTA_ENERGY_T, REGIONAL_DELTA_ENERGY_PAVG = ttest_ind(REGIONAL_DELTA_E
 
 
 regional_plot(REGIONAL_DELTA_ENERGY_T,
-              'Unpaired T-Test for Δ Control Energy of LSD Vs. NO Conditions', 'delta_control_energy_tstat')
+              'Δ Control Energy of LSD and NO Conditions', 'delta_control_energy_tstat')
