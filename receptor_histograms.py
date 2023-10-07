@@ -30,5 +30,4 @@ def create_histograms(receptor_data):
         plt.close()
 
 
-# create_histograms(RECEPTOR_DATA)
-print(RECEPTOR_DATA['5HT1a'])
+create_histograms(RECEPTOR_DATA)
