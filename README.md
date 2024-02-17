@@ -1,6 +1,10 @@
 # Drug comparison
 
-The purpose of this repository is to compute various statistics regarding the effect of psychiatric medications on the brain.
+This repository contains a number of scripts to compute statistics from fMRI scans of patients undergoing psychiatric treatment through the use of experimental drugs including Nitrous Oxide (NO) and Lysergic Acid Diethylamide (LSD). The repo contains the following scripts
+   * subj_energy.py, used to compute control energy statistics as well as to compute t tests between different treatment groups.
+   * dominance.py, used to determine the extent to which different receptors in the brain influence control energy changes.
+   * displacement.py, used to analyze how movement during the brain scanning process may bias results.
+   * receptor_histograms.py, used to visualize receptor densities.
 
 ## Background
 
