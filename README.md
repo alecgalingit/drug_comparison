@@ -1,10 +1,10 @@
 # Drug comparison
 
-This repository contains a number of scripts to compute statistics from fMRI scans of patients undergoing psychiatric treatment through the use of experimental drugs including Nitrous Oxide (NO) and Lysergic Acid Diethylamide (LSD). The repo contains the following scripts
-   * subj_energy.py, used to compute control energy statistics as well as to compute t tests between different treatment groups.
-   * dominance.py, used to determine the extent to which different receptors in the brain influence control energy changes.
-   * displacement.py, used to analyze how movement during the brain scanning process may bias results.
-   * receptor_histograms.py, used to visualize receptor densities.
+This repository contains a number of scripts used to compute statistics regarding the use of experimental drugs including Nitrous Oxide (NO) and Lysergic Acid Diethylamide (LSD) to treat mental health conditions. The code within this repo is summarized in the following bullet points:
+   * subj_energy.py is used to compute control energy statistics as well as to compute t tests between different treatment groups.
+   * dominance.py is used to determine the extent to which different receptors in the brain influence control energy changes.
+   * displacement.py is used to analyze how movement during the brain scanning process may bias results.
+   * receptor_histograms.py is used to visualize receptor densities.
 
 ## Background
 
